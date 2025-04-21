@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Customer Service Form</title>
+  <script>
+    // Paste your Apps Script Web App URL here 👇
+    const scriptURL = "https://script.google.com/macros/s/AKfycbwSSN6kBtfXzo51ed_t6LiNA0DbOVIxArXMY7xOVrUmbUHkc1isUGA3M2_ID5WBUD5s/exec";
+
+    // Service fee lookup
+    const fees = {
+      "Haircut": 100,
+      "Grooming": 200,
+      "Shaving and Beard Trimming": 150,
+      "Head Massage": 120
+    };
+
+    // Auto-fill name & address when phone is entered
+    function lookupDetails() {
+      const phone = document.getElementById("phone").value;
+
+      fetch(scriptURL, {
+        method: 'POST',
+        body: JSON.stringify({ phone, lookup: true })
+      })
+      .then(res => res.json())
+      .then(data => {
+        document.getElementById("name").value = data.name || "";
+        document.getElementById("address").value = data.address || "";
+      });
+    }
+
+    // Set fee when service is selected
+    function updateFee() {
+      const service = document.getElementById("service").value;
+      document.getElementById("fee").value = fees[service] || "";
+    }
+
+    // Submit form to Google Sheets
+    function handleSubmit(event) {
+      event.preventDefault();
+
+      const data = {
+        phone: document.getElementById("phone").value,
+        name: document.getElementById("name").value,
+        address: document.getElementById("address").value,
+        service: document.getElementById("service").value,
+        fee: document.getElementById("fee").value
+      };
+
+      fetch(scriptURL, {
+        method: 'POST',
+        body: JSON.stringify(data)
+      })
+      .then(res => res.json())
+      .then(response => {
+        alert("Submitted successfully!");
+        document.getElementById("form").reset();
+        document.getElementById("fee").value = "";
+      });
+    }
+  </script>
+</head>
+<body>
+  <h2>Customer Service Form</h2>
+  <form id="form" onsubmit="handleSubmit(event)">
+    <label>Phone Number:</label><br>
+    <input type="text" id="phone" name="phone" onblur="lookupDetails()" required><br><br>
+
+    <label>Name:</label><br>
+    <input type="text" id="name" name="name" required><br><br>
+
+    <label>Address:</label><br>
+    <input type="text" id="address" name="address" required><br><br>
+
+    <label>Service:</label><br>
+    <select id="service" name="service" onchange="updateFee()" required>
+      <option value="">-- Select Service --</option>
+      <option value="Haircut">Haircut</option>
+      <option value="Grooming">Grooming</option>
+      <option value="Shaving and Beard Trimming">Shaving and Beard Trimming</option>
+      <option value="Head Massage">Head Massage</option>
+    </select><br><br>
+
+    <label>Fee:</label><br>
+    <input type="text" id="fee" name="fee" readonly><br><br>
+
+    <input type="submit" value="Submit">
+  </form>
+</body>
+</html>
